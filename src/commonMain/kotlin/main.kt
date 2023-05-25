@@ -1,30 +1,34 @@
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.service.storage.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.async.*
-import com.soywiz.korio.async.ObservableProperty
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
+import korlibs.event.*
+import korlibs.korge.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.service.storage.*
+import korlibs.korge.tween.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.image.text.TextAlignment
+import korlibs.io.async.*
+import korlibs.io.async.ObservableProperty
+import korlibs.io.file.std.*
+import korlibs.korge.style.styles
+import korlibs.korge.style.textColor
+import korlibs.korge.style.textFont
+import korlibs.korge.style.textSize
+import korlibs.korge.view.align.*
+import korlibs.math.geom.*
+import korlibs.math.interpolation.*
+import korlibs.time.seconds
 import kotlin.collections.set
 import kotlin.properties.*
 import kotlin.random.*
 
-var cellSize: Double = 0.0
-var fieldSize: Double = 0.0
-var leftIndent: Double = 0.0
-var topIndent: Double = 0.0
+var cellSize: Float = 0f
+var fieldSize: Float = 0f
+var leftIndent: Float = 0f
+var topIndent: Float = 0f
 var font: BitmapFont by Delegates.notNull()
 
 fun columnX(number: Int) = leftIndent + 10 + (cellSize + 10) * number
@@ -45,8 +49,7 @@ var isAnimationRunning = false
 var isGameOver = false
 
 suspend fun main() = Korge(
-    width = 480,
-    height = 640,
+    virtualSize = Size(480, 640),
     title = "2048",
     bgcolor = RGBA(253, 247, 240),
     /**
@@ -54,6 +57,7 @@ suspend fun main() = Korge(
         see [Views.realSettingsFolder]
      */
     gameId = "io.github.rezmike.game2048",
+    forceRenderEveryFrame = false, // Optimization to reduce battery usage!
 ) {
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
 
@@ -70,40 +74,43 @@ suspend fun main() = Korge(
         storage["best"] = it.toString()
     }
 
-    cellSize = views.virtualWidth / 5.0
+    cellSize = views.virtualWidth / 5f
     fieldSize = 50 + 4 * cellSize
     leftIndent = (views.virtualWidth - fieldSize) / 2
-    topIndent = 150.0
+    topIndent = 150f
 
-    val bgField = roundRect(fieldSize, fieldSize, 5.0, fill = Colors["#b9aea0"]) {
+    val bgField = roundRect(Size(fieldSize, fieldSize), RectCorners(5), fill = Colors["#b9aea0"]) {
         position(leftIndent, topIndent)
     }
     graphics {
-        position(leftIndent, topIndent)
         fill(Colors["#cec0b2"]) {
             for (i in 0..3) {
                 for (j in 0..3) {
-                    roundRect(10 + (10 + cellSize) * i, 10 + (10 + cellSize) * j, cellSize, cellSize, 5.0)
+                    roundRect(
+                        10 + (10 + cellSize) * i, 10 + (10 + cellSize) * j,
+                        cellSize, cellSize,
+                        5f
+                    )
                 }
             }
         }
-    }
+    }.position(leftIndent, topIndent)
 
-    val bgLogo = roundRect(cellSize, cellSize, 5.0, fill = RGBA(237, 196, 3)) {
-        position(leftIndent, 30.0)
+    val bgLogo = roundRect(Size(cellSize, cellSize), RectCorners(5), fill = RGBA(237, 196, 3)) {
+        position(leftIndent, 30f)
     }
-    text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
+    text("2048", cellSize * 0.5f, Colors.WHITE, font).centerOn(bgLogo)
 
-    val bgBest = roundRect(cellSize * 1.5, cellSize * 0.8, 5.0, fill = Colors["#bbae9e"]) {
+    val bgBest = roundRect(Size(cellSize * 1.5, cellSize * 0.8), RectCorners(5f), fill = Colors["#bbae9e"]) {
         alignRightToRightOf(bgField)
         alignTopToTopOf(bgLogo)
     }
-    text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
+    text("BEST", cellSize * 0.25f, RGBA(239, 226, 210), font) {
         centerXOn(bgBest)
         alignTopToTopOf(bgBest, 5.0)
     }
-    text(best.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
-        setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
+    text(best.value.toString(), cellSize * 0.5f, Colors.WHITE, font) {
+        setTextBounds(Rectangle(0f, 0f, bgBest.width, cellSize - 24f))
         alignment = TextAlignment.MIDDLE_CENTER
         alignTopToTopOf(bgBest, 12.0)
         centerXOn(bgBest)
@@ -112,16 +119,16 @@ suspend fun main() = Korge(
         }
     }
 
-    val bgScore = roundRect(cellSize * 1.5, cellSize * 0.8, 5.0, fill = Colors["#bbae9e"]) {
+    val bgScore = roundRect(Size(cellSize * 1.5f, cellSize * 0.8f), RectCorners(5.0f), fill = Colors["#bbae9e"]) {
         alignRightToLeftOf(bgBest, 24.0)
         alignTopToTopOf(bgBest)
     }
-    text("SCORE", cellSize * 0.25, RGBA(239, 226, 210), font) {
+    text("SCORE", cellSize * 0.25f, RGBA(239, 226, 210), font) {
         centerXOn(bgScore)
         alignTopToTopOf(bgScore, 5.0)
     }
-    text(score.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
-        setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
+    text(score.value.toString(), cellSize * 0.5f, Colors.WHITE, font) {
+        setTextBounds(Rectangle(0f, 0f, bgScore.width, cellSize - 24f))
         alignment = TextAlignment.MIDDLE_CENTER
         centerXOn(bgScore)
         alignTopToTopOf(bgScore, 12.0)
@@ -134,7 +141,7 @@ suspend fun main() = Korge(
     val restartImg = resourcesVfs["restart.png"].readBitmap()
     val undoImg = resourcesVfs["undo.png"].readBitmap()
     val restartBlock = container {
-        val background = roundRect(btnSize, btnSize, 5.0, fill = RGBA(185, 174, 160))
+        val background = roundRect(Size(btnSize, btnSize), RectCorners(5f), fill = RGBA(185, 174, 160))
         image(restartImg) {
             size(btnSize * 0.8, btnSize * 0.8)
             centerOn(background)
@@ -146,7 +153,7 @@ suspend fun main() = Korge(
         }
     }
     val undoBlock = container {
-        val background = roundRect(btnSize, btnSize, 5.0, fill = RGBA(185, 174, 160))
+        val background = roundRect(Size(btnSize, btnSize), RectCorners(5f), fill = RGBA(185, 174, 160))
         image(undoImg) {
             size(btnSize * 0.6, btnSize * 0.6)
             centerOn(background)
@@ -269,16 +276,16 @@ fun Stage.showAnimation(
     merges: List<Triple<Int, Int, Position>>,
     onEnd: () -> Unit
 ) = launchImmediately {
-    animateSequence {
+    animate {
         parallel {
             moves.forEach { (id, pos) ->
-                blocks[id]!!.moveTo(columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
+                moveTo(blocks[id]!!, columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
             }
             merges.forEach { (id1, id2, pos) ->
                 sequence {
                     parallel {
-                        blocks[id1]!!.moveTo(columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
-                        blocks[id2]!!.moveTo(columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
+                        moveTo(blocks[id1]!!, columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
+                        moveTo(blocks[id2]!!, columnX(pos.x), rowY(pos.y), 0.15.seconds, Easing.LINEAR)
                     }
                     block {
                         val nextNumber = numberFor(id1).next()
@@ -301,18 +308,18 @@ fun Stage.showAnimation(
 fun Animator.animateScale(block: Block) {
     val x = block.x
     val y = block.y
-    val scale = block.scale
+    val scale = block.scaleAvg
     tween(
         block::x[x - 4],
         block::y[y - 4],
-        block::scale[scale + 0.1],
+        block::scaleAvg[scale + 0.1f],
         time = 0.1.seconds,
         easing = Easing.LINEAR
     )
     tween(
         block::x[x],
         block::y[y],
-        block::scale[scale],
+        block::scaleAvg[scale],
         time = 0.1.seconds,
         easing = Easing.LINEAR
     )
@@ -326,21 +333,21 @@ fun Container.showGameOver(onRestart: () -> Unit) = container {
 
     position(leftIndent, topIndent)
 
-    roundRect(fieldSize, fieldSize, 5.0, fill = Colors["#FFFFFF33"])
-    text("Game Over", 60.0, Colors.BLACK, font) {
-        centerBetween(0.0, 0.0, fieldSize, fieldSize)
+    roundRect(Size(fieldSize, fieldSize), RectCorners(5), fill = Colors["#FFFFFF33"])
+    text("Game Over", 60f, Colors.BLACK, font) {
+        centerBetween(0f, 0f, fieldSize, fieldSize)
         y -= 60
     }
-    uiText("Try again", 120.0, 35.0) {
-        centerBetween(0.0, 0.0, fieldSize, fieldSize)
+    uiText("Try again", Size(120.0, 35.0)) {
+        centerBetween(0f, 0f, fieldSize, fieldSize)
         y += 20
-        textSize = 40.0
-        textFont = font
-        textColor = RGBA(0, 0, 0)
-        onOver { textColor = RGBA(90, 90, 90) }
-        onOut { textColor = RGBA(0, 0, 0) }
-        onDown { textColor = RGBA(120, 120, 120) }
-        onUp { textColor = RGBA(120, 120, 120) }
+        styles.textSize = 40f
+        styles.textFont = font
+        styles.textColor = RGBA(0, 0, 0)
+        onOver { styles.textColor = RGBA(90, 90, 90) }
+        onOut { styles.textColor = RGBA(0, 0, 0) }
+        onDown { styles.textColor = RGBA(120, 120, 120) }
+        onUp { styles.textColor = RGBA(120, 120, 120) }
         onClick { restart() }
     }
 

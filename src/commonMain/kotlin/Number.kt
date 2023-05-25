@@ -1,4 +1,4 @@
-import com.soywiz.korim.color.RGBA
+import korlibs.image.color.RGBA
 
 enum class Number(val value: Int, val color: RGBA) {
     ZERO(2, RGBA(240, 228, 218)),
