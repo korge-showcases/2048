@@ -1,12 +1,13 @@
-import com.soywiz.kds.*
-import com.soywiz.korge.scene.*
+import korlibs.datastructure.*
+import korlibs.image.font.*
+import korlibs.korge.bitmapfont.*
 import kotlin.test.*
 
 class PositionTest {
 
     @BeforeTest
     fun init() {
-        font = debugBmpFont
+        font = DefaultTtfFontAsBitmap
     }
 
     @Test
