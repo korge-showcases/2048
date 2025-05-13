@@ -5,3 +5,6 @@
 *.hprof
 *.log
 /local.properties
+/null.frame
+/null.socket
+/.kotlin
