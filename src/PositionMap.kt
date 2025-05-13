@@ -7,7 +7,10 @@ enum class Direction {
     LEFT, RIGHT, TOP, BOTTOM
 }
 
-class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
+class PositionMap(
+    private val blocks: MutableMap<Int, IngameScene.Block>,
+    private val array: IntArray2 = IntArray2(4, 4, -1)
+) {
 
     private fun getOrNull(x: Int, y: Int) = if (array[x, y] != -1) Position(x, y) else null
 
@@ -60,7 +63,7 @@ class PositionMap(private val array: IntArray2 = IntArray2(4, 4, -1)) {
 
     fun forEach(action: (Int) -> Unit) { array.forEach(action) }
 
-    fun copy() = PositionMap(array.copy(data = array.data.copyOf()))
+    fun copy() = PositionMap(blocks, IntArray2(array.width, array.height, array.data.copyOf()))
 
     override fun equals(other: Any?): Boolean {
         return (other is PositionMap) && this.array.data.contentEquals(other.array.data)

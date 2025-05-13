@@ -9,7 +9,7 @@ korge {
 
     name = "2048"
 
-    icon = file("src/commonMain/resources/korge.png")
+    icon = file("resources/korge.png")
 
 // To enable all targets at once
 
@@ -22,8 +22,9 @@ korge {
 
     targetJvm()
     targetJs()
+    targetWasm()
     targetDesktop()
-    targetIos()
+    //targetIos()
     targetAndroid()
 
     serializationJson()
