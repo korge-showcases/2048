@@ -122,14 +122,14 @@ class IngameScene : Scene() {
 
         fixedSizeContainer(Size(cellSize * 1.5, cellSize * 0.8)) {
             position(140, 30)
-            roundRect(Size(cellSize * 1.5, cellSize * 0.8), RectCorners(5f), fill = Colors["#bbae9e"])
+            val roundRect = roundRect(Size(cellSize * 1.5, cellSize * 0.8), RectCorners(5f), fill = Colors["#bbae9e"])
             text("SCORE", cellSize * 0.25f, RGBA(239, 226, 210), font) {
                 centerXOn(this@fixedSizeContainer)
                 alignTopToTopOf(this@fixedSizeContainer, 5.0)
             }
-            text(score.value.toString(), cellSize * 0.5f, Colors.WHITE, font) {
-                this.alignment = TextAlignment.TOP_CENTER
-                position(this@fixedSizeContainer.width / 2, 24.0)
+            text(score.value.toString(), cellSize * 0.5f, Colors.WHITE, font, alignment = TextAlignment.MIDDLE_CENTER) {
+                position(0, 24.0)
+                setTextBounds(Rectangle(0, 0, roundRect.width, roundRect.height - 24))
 
                 score.observe {
                     text = it.toString()
@@ -139,14 +139,14 @@ class IngameScene : Scene() {
 
         fixedSizeContainer(Size(cellSize * 1.5, cellSize * 0.8)) {
             position(304, 30)
-            roundRect(Size(cellSize * 1.5, cellSize * 0.8), RectCorners(5f), fill = Colors["#bbae9e"])
+            val roundRect = roundRect(Size(cellSize * 1.5, cellSize * 0.8), RectCorners(5f), fill = Colors["#bbae9e"])
             text("BEST", cellSize * 0.25f, RGBA(239, 226, 210), font) {
                 centerXOn(this@fixedSizeContainer)
                 alignTopToTopOf(this@fixedSizeContainer, 5.0)
             }
-            text(best.value.toString(), cellSize * 0.5f, Colors.WHITE, font) {
-                this.alignment = TextAlignment.TOP_CENTER
-                position(this@fixedSizeContainer.width / 2, 24.0)
+            text(best.value.toString(), cellSize * 0.5f, Colors.WHITE, font, alignment = TextAlignment.MIDDLE_CENTER) {
+                position(0, 24.0)
+                setTextBounds(Rectangle(0, 0, roundRect.width, roundRect.height - 24))
 
                 best.observe {
                     text = it.toString()
